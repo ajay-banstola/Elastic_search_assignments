@@ -1,0 +1,60 @@
+PUT hiking
+
+PUT hiking/_doc/1
+{"hiked_on":"2019/01/26","coordinator":"Ajay Banstola", "total_students":12, "cost":3456.67, "bus_booked":true, "checklist":["bottle","medicine"],"test_field":"test"}
+
+POST hiking/_doc
+{"hiked_on":"2019/02/26","coordinator":"Aamod Paudel", "total_students":15, "cost":4000.67, "bus_booked":false, "checklist":["trousers","medicine"],"test_field":"test1"}
+
+GET hiking/_doc/1
+GET hiking/_doc/_search
+GET hiking/_doc/1/_source
+GET hiking/_doc/1?_source=false
+GET hiking/_doc/1?_source_include=hiked_on,coordinator,total_students
+GET hiking/_doc/1?_source_exclude=checklist,test_field
+
+
+POST hiking/_doc/1/_update
+{
+  "doc": {
+    "new_temp_field": true
+  }
+}
+
+
+POST hiking/_doc/1/_update
+{
+  "script": {
+    "lang": "painless",
+    "source": "    ctx._source.remove('new_temp_field');\n    ctx._source.new_field='new_value';"
+  }
+}
+
+
+POST hiking/_doc/1/_update
+{
+  "script": {
+    "lang": "painless",
+    "source": "ctx._source.total_students=params.total_std",
+    "params": {
+      "total_std": 14
+    }
+  }
+}
+
+
+POST hiking/_doc/1/_update
+{
+  "script": {
+    "lang": "painless",
+    "source": """
+    for (int i=0; i<5; i++){
+      if (ctx._source.total_students > 12){
+        ctx._source.cost+=100
+      }else{
+        ctx._source.cost+=50;
+      }
+    }
+"""
+  }
+}
