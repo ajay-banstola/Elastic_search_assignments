@@ -1,0 +1,144 @@
+PUT assignment2
+{
+  "mappings": {
+    "_doc": {
+      "dynamic": false,
+      "properties": {
+        "coordinator": {
+          "type": "text"
+        },
+        "coordinator_phn": {
+          "type": "keyword"
+        },
+        "phone_no": {
+          "type": "double"
+        },
+        "id_no": {
+          "type": "long"
+        },
+        "geo_point": {
+          "type": "float"
+        },
+        "distance_covered": {
+          "type": "integer_range"
+        },
+        "time_taken": {
+          "type": "date_range",
+          "format": "MM-dd-yyyy HH:mm:ss"
+        },
+        "required_items": {
+          "type": "text"
+        },
+        "destination": {
+          "properties": {
+            "name": {
+              "type": "text"
+            },
+            "address": {
+              "type": "text"
+            }
+          }
+        },
+        "attendees": {
+          "type": "nested",
+          "properties": {
+            "name": {
+              "type": "text"
+            },
+            "batch": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT assignment2/_doc/1
+{
+  "coordinator": "Ajay Banstola",
+  "coordinator_phn": "9849770220",
+  "phone_no": 4621231,
+  "id_no": 608,
+  "geo_point": 64.8,
+  "distance_covered": {
+    "gt": 45,
+    "lt": 50
+  },
+  "time_taken": {
+    "gte": "05-20-2017 05:00:00",
+    "lte": "05-20-2017 05:30:00"
+  },
+  "required_items": [
+    "bottle",
+    "food"
+  ],
+  "destination": {
+    "name": "Ghyampe Dada",
+    "address": "Bhaktapur"
+  },
+  "attendees": [
+    {
+      "name": "Ajay Banstola",
+      "batch": "2020"
+    },
+    {
+      "name": "Munu Shrestha",
+      "batch": "2018"
+    }
+  ]
+}
+
+PUT assignment2/_doc/2
+{
+  "coordinator": "Jiban Shrestha",
+  "coordinator_phn": "9848770220",
+  "phone_no": 4821231,
+  "id_no": 609,
+  "geo_point": 74.8,
+  "distance_covered": {
+    "gt": 45,
+    "lt": 50
+  },
+  "time_taken": {
+    "gte": "05-20-2018 05:00:00",
+    "lte": "05-20-2018 05:30:00"
+  },
+  "required_items": [
+    "Note",
+    "food"
+  ],
+  "destination": {
+    "name": "Lukla Dada",
+    "address": "Lalitpur"
+  },
+  "attendees": [
+    {
+      "name": "Ruby Banstola",
+      "batch": "2020"
+    },
+    {
+      "name": "Ajay Shrestha",
+      "batch": "2018"
+    }
+  ]
+}
+
+#exceptional parameter
+POST assignment2/_doc/2/_update
+{
+  "doc": {
+    "distance_covered": {
+      "gt": 65,
+      "lt": 50
+    }
+  }
+}
+#"type": "illegal_argument_exception",
+#      "reason": "min value (66) is greater than max value (49)"
+
+curl -H "Content-Type:application/json" -XPOST "http://localhost:9200/accounts/_doc/_bulk?pretty" --data-binary @accounts.json
+
+
+
