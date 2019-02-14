@@ -141,4 +141,250 @@ POST assignment2/_doc/2/_update
 curl -H "Content-Type:application/json" -XPOST "http://localhost:9200/accounts/_doc/_bulk?pretty" --data-binary @accounts.json
 
 
+Q.no.5
+http://localhost:9200/accounts/_doc/_search?q=?
+http://localhost:9200/accounts/_doc/_search?q=age:[30%20TO%2070]
+http://localhost:9200/accounts/_doc/_search?q=gender:F%20AND%20age:[25%20TO%20*]
+http://localhost:9200/accounts/_doc/_search?q=gender:M%20AND%20state:ME
 
+Q.no.6
+POST accounts/_update_by_query?conflicts=proceed
+{
+  "query": {
+    "match_all": {}
+  },
+  "script": {
+    "source": "ctx._source.expense_list=[]"
+  }
+}
+
+POST accounts/_update_by_query?conflicts=proceed
+{
+  "query": {
+    "range": {
+      "age": {
+        "gte": "30",
+        "lte": "70"
+      }
+    }
+  },
+  "script": {
+    "source": """
+    if (ctx._source.containsKey('expense_list')){
+      if (!ctx._source.expense_list.contains(params.valstd)){
+        ctx._source.expense_list.add(params.valstd);
+      }
+    }else{
+      ctx._source.expense_list=[];
+    }
+    """,
+    "params": {
+      "valstd": "student_loan"
+    }
+  }
+}
+
+POST accounts/_update_by_query?conflicts=proceed
+{
+  "query": {
+    "range": {
+      "age": {
+        "gte": "25",
+        "lte": "50"
+      }
+    }
+  },
+  "script": {
+    "source": """
+    if (ctx._source.containsKey('expense_list')){
+      if (!ctx._source.expense_list.contains(params.valcar)){
+        ctx._source.expense_list.add(params.valcar);
+      }
+      if (!ctx._source.expense_list.contains(params.valhouse)){
+        ctx._source.expense_list.add(params.valhouse);
+      }
+    }else{
+      ctx._source.expense_list=[];
+    }
+    """,
+    "params": {
+      "valcar": "car_loan",
+      "valhouse": "house_loan"
+    }
+  }
+}
+
+POST accounts/_update_by_query?conflicts=proceed
+{
+  "query": {
+    "range": {
+      "balance": {
+        "gte": "40000"
+      }
+    }
+  },
+  "script": {
+    "source": """
+    if (ctx._source.containsKey('expense_list')){
+      if (!ctx._source.expense_list.contains(params.val)){
+        ctx._source.expense_list.add(params.val);
+      }
+    }else{
+      ctx._source.expense_list=[];
+      
+    }
+    """,
+    "params": {
+      "val": "recreation"
+    }
+  }
+}
+
+POST accounts/_update_by_query?conflicts=proceed
+{
+  "query": {
+    "term": {
+      "state": {
+        "value": "pa"
+      }
+    }
+  },
+  "script": {
+    "source": "ctx._source.balance-=2000"
+  }
+}
+
+Q.no,7
+POST accounts/_delete_by_query
+{
+  "query": {
+    "term": {
+      "state": {
+        "value": "ky"
+      }
+    }
+  }
+}
+
+Q.no.8
+GET accounts/_search
+{
+  "query": {
+    "term": {
+      "state": {
+        "value": "ky"
+      }
+    }
+  }
+}
+
+GET accounts/_search
+{
+  "query": {
+    "range": {
+      "age": {
+        "gte": 20,
+        "lte": 50
+      }
+    }
+  }
+}
+
+GET accounts/_search
+{
+  "query": {
+    "prefix": {
+      "firstname": "el"
+    }
+  }
+}
+
+GET accounts/_search
+{
+  "query": {
+    "wildcard": {
+      "firstname": "el*"
+    }
+  }
+}
+
+Q.no.9
+PUT college
+{
+  "mappings": {
+    "_doc": {
+      "dynamic": false,
+      "properties": {
+        "batch": {
+          "type": "integer"
+        },
+        "students": {
+          "type": "nested",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "text"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT college/_doc/1
+{
+  "batch":2020,
+  "stuents":[{"id":601,"name":"Nabin Koirala"},
+  {"id":602,"name":"Subham Dhakal"},
+  {"id":603,"name": "Aamod Paudel"}
+  ]
+}
+
+PUT workshop
+{
+  "mappings": {
+    "_doc": {
+      "dynamic": false,
+      "properties": {
+        "students_id": {
+          "type": "integer"
+        },
+        "workshop_about": {
+          "type": "text"
+        },
+        "enrolled_year": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}
+
+POST workshop/_doc/_bulk
+{"index":{"_id":1}}
+{"students_id":[521,602,523,633,535],"workshop_about":"elastic search","enrolled_year":"2018"}
+{"index":{"_id":2}}
+{"students_id":[510,601,534,613,532],"workshop_about":"IT and networking","enrolled_year":"2016"}
+{"index":{"_id":3}}
+{"students_id":[501,502,534,522,532],"workshop_about":"Software Testing","enrolled_year":"2017"}
+{"index":{"_id":4}}
+{"students_id":[520,522,524,511,523],"workshop_about":"Python Programming Fundamentals","enrolled_year":"2017"}
+{"index":{"_id":5}}
+{"students_id":[620,614,603,643,633],"workshop_about":"Public Speaking","enrolled_year":"2016"}
+
+GET workshop/_search
+{
+    "query":{
+        "terms":{
+            "students_id":{
+                "index":"college",
+                "type":"_doc",
+                "id": "1",
+                "path":"students.id"
+            }
+        }
+    }
+}
