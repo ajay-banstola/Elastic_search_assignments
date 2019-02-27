@@ -121,7 +121,8 @@ GET shakespeare/_search
   "query": {
     "multi_match": {
       "query": "Henry IV",
-      "fields": ["play_name","speaker"]
+      "fields": ["play_name","speaker"],
+      "operator": "and"
     }
   }
 }
