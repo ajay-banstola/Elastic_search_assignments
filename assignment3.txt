@@ -48,7 +48,7 @@ Q.no.5
 GET product/_search
 {
   "query": {
-    "match_phrase_prefix": {
+    "prefix": {
       "name": "past"
     }
   }
