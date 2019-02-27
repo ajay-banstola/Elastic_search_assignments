@@ -337,7 +337,7 @@ PUT college
 PUT college/_doc/1
 {
   "batch":2020,
-  "stuents":[{"id":601,"name":"Nabin Koirala"},
+  "students":[{"id":601,"name":"Nabin Koirala"},
   {"id":602,"name":"Subham Dhakal"},
   {"id":603,"name": "Aamod Paudel"}
   ]
