@@ -439,11 +439,7 @@ GET recipes/_doc/_search
     }
 }
 
-/*
-8. Design your own search using compound bool query. The bool query should have at least 2 musts, at least 
-2 filters and at least 1 should. Showcase the use of synonyms, proximity (slop) and fuzziness parameters 
-where possible in your search query.
-*/
+#Q.no.8#############################################
 
 GET recipes/_doc/_search
 {
@@ -495,10 +491,7 @@ GET recipes/_doc/_search
     }
 }
 
-/*
-9. Practice using cut-off frequency to handle domain specific stop-words in match query and common-terms 
-query. You can make use of steps field for this purpose.
-*/
+#Q.no.9#############################################
 
 GET recipes/_search
 {
@@ -550,14 +543,7 @@ GET recipes/_search
     }
 }
 
-/*
-10. 
-A. Create an index items with mapping having following fields:
-    item_id: integer field
-    name: text field
-    stock: integer field
-    vendor: object with properties name (text field), contact (keyword), address(geo_point)
-*/
+#Q.no.10######################################
 
 PUT store
 {
@@ -714,13 +700,7 @@ GET store/_search
 }
 
 
-/*
-Related to orders-bulk.json
-11. Create filtered alias of documents of orders index fulfilling the following conditions:
-status: processed or completed
-sales_channel: phone and app
-Having total_amount >=100
-*/
+#Q.no.11#############################################
 
 POST /_aliases
 {
@@ -759,15 +739,7 @@ POST /_aliases
     ]
 }
 
-/*
-12. Perform the following queries in the filtered alias. Design your search conditions yourself.
-Term query
-Range query
-Prefix query
-Wildcard Query
-Match
-Fuzzy Match
-*/
+#Q.no.12#######################################
 
 /* Term Query */
 GET order_sample/_search
@@ -848,12 +820,9 @@ GET order_sample/_search
 
 /*
 Creativity Check
-Create an index of your own choice with mapping having fields of different types. 
-Consider using all the types that we have learnt so far. 
-Prefer creating analyzer and try using synonyms and stop-words filters in the analyzer.
 */
 
-PUT football_club
+PUT gaming_club
 {
     "settings": {
         "index": {
@@ -876,9 +845,9 @@ PUT football_club
                     },
                     "custom_synonyms": {
                         "type": "synonym",
-                        "synonyms": ["football=>soccer","team=>squad", "league=>division",
-                        "premier league=>english league", "la liga=>spanish league",
-                        "serie a=>italian league", "ligue 1=>french league"
+                        "synonyms": ["game=>play","team=>squad", "league=>division",
+                        "ping=>lag", "csgo=>CounterStrikeGo",
+                        "spectate=>view"
                         ]
                     }
                 }
@@ -902,7 +871,7 @@ PUT football_club
                 "location": {
                     "type": "keyword"
                 },
-                "kit": {
+                "mouse": {
                     "type": "nested",
                     "properties": {
                         "color": {
@@ -913,15 +882,15 @@ PUT football_club
                         }
                     }
                 },
-                "stadium": {
+                "laptop": {
                     "properties": {
                         "name": {
                             "type": "text"
                         },
-                        "location": {
+                        "RAM": {
                             "type": "geo_point"
                         },
-                        "capactiy": {
+                        "storage": {
                             "type": "integer"
                         }
                     }
@@ -945,7 +914,7 @@ PUT football_club
                 "players_age_range": {
                     "type": "integer_range"
                 },
-                "market_value_in_billion": {
+                "market_value": {
                     "type": "double"
                 }
             }
@@ -958,22 +927,22 @@ Bulk insert at least 10 documents creating a json file yourself and by using cur
 */
 
 curl -H "Content-Type: application/json" 
-    -XPOST "http://localhost:9200/football_club/_doc/_bulk?pretty" 
-    --data-binary @football_club.json
+    -XPOST "http://localhost:9200/gaming_club/_doc/_bulk?pretty" 
+    --data-binary @gaming_club.json
 
 /*
 Perform as many different searches and aggregations as you would like to for analyzing various aspects of 
 your data.
 */
 
-GET football_club/_search
+GET gaming_club/_search
 
 /* Searching with Synonyms */
-GET football_club/_doc/_search
+GET gaming_club/_doc/_search
 {
     "query": {
         "match": {
-            "name": "chelsea soccer"
+            "name": "multiplayer csgo"
         }
     }, 
     "highlight": {
@@ -983,17 +952,17 @@ GET football_club/_doc/_search
     }
 }
 
-GET football_club/_doc/_search
+GET gaming_club/_doc/_search
 {
     "query": {
         "match_phrase_prefix": {
-            "league": "english league"
+            "league": "single player dota"
         }
     }
 }
 
 /* Fuzzy Query */
-GET football_club/_doc/_search
+GET gamingclub_club/_doc/_search
 {
     "query": {
         "fuzzy" : {
@@ -1006,7 +975,7 @@ GET football_club/_doc/_search
 }
 
 /* Nested Bool Query */
-GET football_club/_doc/_search
+GET gaming_club/_doc/_search
 {
     "query": {
         "nested": {
@@ -1037,28 +1006,10 @@ GET football_club/_doc/_search
     }
 }
 
-/* Geo Queries */
-/* Neighbours of Chelsea FC */
-GET football_club/_search
-{
-  "query": {
-        "bool": {
-        "filter": {
-            "geo_distance": {
-                "distance": "100km",
-                "stadium.location": {
-                    "lat": 51.28,
-                    "lon": 0.11
-                }
-            }
-        }
-        }
-    }
-}
 
 
 /* Sort */
-GET football_club/_doc/_search
+GET gaming_club/_doc/_search
 {
     "query": {
         "match_all": {}
@@ -1073,7 +1024,7 @@ GET football_club/_doc/_search
 }
 
 /* Range Aggregation with Custom Keys */
-GET football_club/_doc/_search
+GET gaming_club/_doc/_search
 {
     "size": 0,
     "aggs": {
@@ -1102,7 +1053,7 @@ GET football_club/_doc/_search
 
 /* Bucket Aggregation */
 
-PUT football_club/_mapping/_doc
+PUT gaming_club/_mapping/_doc
 {
   "properties": {
     "league": { 
@@ -1112,7 +1063,7 @@ PUT football_club/_mapping/_doc
   }
 }
 
-GET football_club/_doc/_search
+GET gaming_club/_doc/_search
 {
     "size": 0,
     "aggs": {
@@ -1126,7 +1077,7 @@ GET football_club/_doc/_search
 }
 
 /* Extended stats */
-GET football_club/_doc/_search
+GET gaming_club/_doc/_search
 {
   "size": 0,
   "aggs": {
