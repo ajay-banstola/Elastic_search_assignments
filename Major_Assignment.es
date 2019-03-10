@@ -52,7 +52,7 @@ PUT recipes
     }
 }
 ---------------------------------------------------------------
-PUT new_analyzer
+PUT recipes
 {
     "settings": {
         "index": {
@@ -91,52 +91,153 @@ PUT new_analyzer
                 "steps": {
                     "type": "text",
                     "analyzer": "custom_analyzer"
+                },
+                     "preparation_time_minutes": {
+                      "type": "integer"
+                    },
+                    "servings": {
+                      "properties": {
+                        "min": {
+                          "type": "integer"
+                        },
+                        "max": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "steps": {
+                      "type": "text",
+                      "analyzer": "custom_analyzer"
+                    },
+                    "ingredients": {
+                      "type": "nested",
+                      "properties": {
+                        "name": {
+                          "type": "text"
+                        },
+                        "quantity": {
+                          "type": "keyword"
+                        }
+                      }
+                    },
+                    "created": {
+                      "type": "date",
+                      "format": "yyyy/MM/dd"
+                    },
+                    "ratings": {
+                      "type": "double"
+                    }
+                  }
                 }
+              }
             }
-        }
-    }
-}
 
 #Q.no.2#####################################################Bulk Insert #############
 curl -H "Content-Type: application/json" -XPOST "http://localhost:9200/recipes/_doc/_bulk?pretty" --data-binary @recipe.json
 
 #Q.no3.###############################
+POST recipes/_doc/_update_by_query
+{
+  "query": {
+    "range": {
+      "preparation_time_minutes": {
+        "lte": 15
+      }
+    }
+  },
+  "script": {
+    "lang": "painless",
+    "params": {
+      "lower_limit": 1,
+      "upper_limit": 3
+    },
+    "source": """
+            int difference= ctx._source.servings.max - ctx._source.servings.min;
+            if (difference<params.lower_limit) {
+                ctx._source.servings.max+=params.lower_limit
+            }else if (difference>params.upper_limit){
+                ctx._source.servings.max+=params.upper_limit
+            }
+        """
+  }
+}
 
 
 #Q.no.4.##############################
-GET recipes/_search
-
-GET product/_search
+GET recipes/_doc/_search
 {
   "query": {
-    "bool": {
-      "must_not": {
-        "exists": {
-          "field": "tags"
+    "nested":{
+      "path":"ingredients","inner_hits":{},
+      "query":{
+        "bool":{
+          "must_not":{
+            "exists":{
+              "field":"ingredients.quantity"
+            }
+          }
         }
       }
     }
   }
 }
 
-POST recipes/_update_by_query?conflicts=proceed
+
+POST recipes/_doc/_update_by_query
 {
-    "query": {
-        "nested": {
-            "path": "ingredients"
+  "query": {
+    "nested":{
+      "path":"ingredients","inner_hits":{},
+      "query":{
+        "bool":{
+          "must_not":{
+            "exists":{
+              "field":"ingredients.quantity"
+            }
+          }
         }
+      }
     }
-}
+  }, "script": {
+    "source": """
+      for (ingr in ctx._source.ingredients){
+        if (!ingr.containsKey('quantity')) { 
+          ingr.quantity = params['val']; 
+          updated = true; 
+        }}""",    
+    "params": {
+      "val": "Per Choice"
+    }}
+
+
 
 #Q.no.5.##################################
-POST recipes/_delete_by_query
+GET recipes/_doc/_search
 {
-    "query": {
-        "term": {
-            "ratings": "NULL"
+  "query": {
+    "bool": {
+      "must_not": {
+        "exists": {
+          "field": "ratings"
         }
+      }
     }
+  }
 }
+
+POST recipes/_doc/_delete_by_query
+{
+  "query": {
+    "bool": {
+      "must_not": {
+        "exists": {
+          "field": "ratings"
+        }
+      }
+    }
+  }
+}
+
 
 #Q.no.6 ###################################
 PUT recipes/_mapping/_doc
