@@ -548,10 +548,10 @@ GET recipes/_doc/_search
         "bool": {
             "must": [
                 {
-                    "match_phrase": {
+                    "phrase": {
                         "title": {
                             "query": "tomato",
-                            "slop": 3
+                       
                         }
                     }
                 },
